@@ -25,7 +25,8 @@ function stop() {
 };
 //зміна кольору body 
 function setColor() {
-   let bgColor= getRandomHexColor(); //генеруємо колір
+    let bgColor = getRandomHexColor(); //генеруємо колір
+    console.log('bgColor ', bgColor);
     refs.body.style.backgroundColor = bgColor; //змінюємо колір body
 };
 

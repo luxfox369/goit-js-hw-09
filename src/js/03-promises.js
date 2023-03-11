@@ -19,7 +19,7 @@ refs.form.addEventListener("submit", onSubmit);
 
 function onSubmit(event) {
   event.preventDefaut();
-  console.dir(e.currentTarget); //ref форма
+  //console.dir(e.currentTarget); //ref форма
   //console.log(e.target); //ref button
   const { elements: { delay, step, amount } } = event.currentTarget;
     

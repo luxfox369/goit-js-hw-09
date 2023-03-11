@@ -18,17 +18,16 @@ const refs = {
 refs.form.addEventListener("submit", onSubmit);
 
 function onSubmit(event) {
-  event.preventDefaut();
+  event.preventDefault() ;
   //console.dir(e.currentTarget); //ref форма
   //console.log(e.target); //ref button
-  const { elements: { delay, step, amount } } = event.currentTarget;
+  const { elements: { delay, step, amount} } = event.currentTarget;
     
-  console.log('amount ', amount);
-  console.log('delay ', delay);
-  console.log('step ', step);
+  //console.log('elements ', elements);
+  
   let delta = 0;
-  for (let i = 1; i <= amount; i += 1) {
-    if (i > 1) delta = step ;
+  for (let i = 1; i <= amount.value; i += 1) {
+    if (i > 1) delta = step.value ;
     
     const promise = createPromise(i, delay + delta);
     promise

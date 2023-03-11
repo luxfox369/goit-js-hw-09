@@ -37,7 +37,7 @@ const options = {
 flatpickr(refs.input, options);
 
 //Додаю стилі щоб поставити timer в центр
-refs.countDownTimer.style.cssText = 'padding-top:10px;display:flex;gap:10px;justify-content:center;font-size:25px;';
+refs.countDownTimer.style.cssText = 'display:flex;gap:10px;justify-content:center;font-size:25px;padding:10px;';
 refs.input.style.cssText = 'display:inline-block;text-align:center;';
 //обгортаю input+button в div щоб поставити в центр
 function wrap(el1, el2, wrapper) {
@@ -57,11 +57,11 @@ Array.from(refs.fields).map(item => {
 });
 //кінець налаштування стилів
 
-//check date selectedDates[0] 
+//перевірка введеної дати викликается з onClose() метода з options flatpickr
 function checkedSelectedDateMs (selectedDate) {
     let currentDataMS = new Date().getTime(); //ms від текучої дати до 01/01/1970 //= date.now()
   //  console.log("currentDataMS ", currentDataMS);
-    const selectedDateMS = selectedDate.getTime(); //вибрана дата = число мс від 01/01/1970
+    const selectedDateMS = selectedDate.getTime(); //від вибраної дати число мс до 01/01/1970
   //  console.log('selectedDateMS ', selectedDateMS);
     delta = selectedDateMS - currentDataMS;    //різниця = число  ms
     console.log('delta counted ', delta);

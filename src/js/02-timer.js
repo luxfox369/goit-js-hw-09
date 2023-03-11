@@ -84,16 +84,15 @@ function start() {
     }
 }
 function countdown(ms) {
-    convertMs(ms); // повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 2}
-    //Напиши функцію addLeadingZero(value) з padStart повертає {days: 0, hours: 00, minutes: 00, seconds: 02}
-    //Кількість днів може складатися з більше, ніж двох цифр.
-    //тут функція яка перемальовує html:
-    // в (refs.days/refs.hours/refs.minutes/refs.seсonds) розкидує 
-    //{ days.value, hours.value, minutes.value, seconds.value } )
-
+//   const result = convertMs(ms); // повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 2}
+//   const paddedResult = addLeadingZero(result);
+//     render(paddedResult);  
+    render(addLeadingZero(convertMs(ms)));
+    
     if (delta < 1000) {
         clearInterval(idTimer);
         //тут функція reset timer на нулі
+        render({days: 0, hours: 00, minutes: 00, seconds: 00});
     }
 };
 
@@ -120,3 +119,14 @@ function convertMs(ms) {
 // console.log(convertMs(140000)); // {days: 0, hours: 0, minutes: 2, seconds: 20}
 // console.log(convertMs(24140000)); // {days: 0, hours: 6 minutes: 42, seconds: 20}
 
+function addLeadingZero({ days, hours, minutes, seconds }) {     //з padStart повертає {days: 0, hours: 00, minutes: 00, seconds: 02}
+ //Напиши функцію addLeadingZero(result) з padStart повертає {days: 0, hours: 00, minutes: 00, seconds: 02}
+    //Кількість днів може складатися з більше, ніж двох цифр.
+    return { days, hours, minutes, seconds };
+};
+function render({ days, hours, minutes, seconds }) {
+ //тут render(paddedRresult)функція яка перемальовує html:
+    // в (refs.days/refs.hours/refs.minutes/refs.seсonds) розкидує 
+    //{ days.value, hours.value, minutes.value, seconds.value } )
+   
+}

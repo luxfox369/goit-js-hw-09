@@ -28,7 +28,7 @@ const options = {
   defaultDate: new Date(), //String	Sets the initial selected date(s).
   minuteIncrement: 1, //nteger	5	Adjusts the step for the minute input (incl. scrolling)
   onClose(selectedDates) {  //Function(s) to trigger on every time the calendar is closed
-      //console.log(selectedDates[0]); //selectedDates - an array of Date objects selected by the user. When there are no dates selected, the array is empty.
+      console.log(selectedDates[0]); //selectedDates - an array of Date objects selected by the user. When there are no dates selected, the array is empty.
       checkedSelectedDateMs(selectedDates[0]);
     },
 };
@@ -68,7 +68,6 @@ function checkedSelectedDateMs (selectedDate) {
     if (delta < 990) { //якщо  дата не в майбутньому delta < 1c
         return alert("Please choose a date in the future");
   }
-  
     refs.button.disabled = false; //клавіша start доступна але невідразу потрібну клацнути по чомусь іншому ???
 return selectedDateMS;
 }
@@ -88,15 +87,17 @@ function start() {
     }
 }
 function countdown(ms) {
-    if (ms < 1000) {   
-        clearInterval(idTimer);
-        //тут функція reset timer на нулі
-        render({days: 0, hours: 00, minutes: 00, seconds: 00});
-    }
-   //const result = convertMs(ms);                // повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 0}
-   //const paddedResult = addLeadingZero(result); //повертає обєкт{days: 0, hours: 00, minutes: 00, seconds: 00}
-    // render(paddedResult);                      //з обєкта розкидає в розмітку
-    render(addLeadingZero(convertMs(ms))); 
+  console.log("from countdown(ms)",ms);
+  //   if (ms < 990) {   
+  //       clearInterval(idTimer);
+  //       //тут функція reset timer на нулі
+  //       render({days: 0, hours: 00, minutes: 00, seconds: 00,});
+  //   }
+  const result = convertMs(ms);                // повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 0}
+  console.log("result from convertMs(ms)",result);
+    //  const paddedResult = addLeadingZero(result); //повертає обєкт{days: 0, hours: 00, minutes: 00, seconds: 00}
+  //   render(paddedResult);                      //з обєкта розкидає в розмітку
+  //  // render(addLeadingZero(convertMs(ms))); 
     
     
 };
@@ -116,7 +117,7 @@ function convertMs(ms) {
   const minutes = Math.floor(((ms % day) % hour) / minute);
   // Remaining seconds
   const seconds = Math.floor((((ms % day) % hour) % minute) / second);
-   // console.log({ days.value, hours.value, minutes.value, seconds.value  });
+
   return { days, hours, minutes, seconds };
 }
 

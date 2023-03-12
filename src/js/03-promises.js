@@ -4,9 +4,9 @@ function createPromise(position, delay) {
     const shouldResolve = Math.random() > 0.3;
     setTimeout(() => {
       if (shouldResolve) {
-        resolve(`✅ Fulfilled promise ${position} in ${delay}ms`);
+        resolve(`✅ Fulfilled promise ${position} in  ${delay} ms`);
       } else {
-        reject(`❌ Rejected promise ${position} in ${delay}ms`);
+        reject(`❌ Rejected promise ${position} in  ${delay} ms`);
       }
     }, delay);
   });
@@ -21,17 +21,16 @@ function onSubmit(event) {
   event.preventDefault() ;
   //console.dir(e.currentTarget); //ref форма
   //console.log(e.target); //ref button
-  const { elements: { delay, step, amount} } = event.currentTarget;
-    
-  //console.log('elements ', elements);
-  
-  let delta = 0;
+  const { elements: {delay, step, amount} } = event.currentTarget;
+ 
+  let krok = 0;
   for (let i = 1; i <= amount.value; i += 1) {
-    if (i > 1) delta = step.value ;
+    if (i > 1) krok = step.value;
     
-    const promise = createPromise(i, delay + delta);
+    const promise = createPromise(i, delay  + krok);
     promise
       .then(value => { console.log(value); })
       .catch(error => { console.log(error);})
   }
 }
+

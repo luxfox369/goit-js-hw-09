@@ -19,15 +19,14 @@ refs.form.addEventListener("submit", onSubmit);
 
 function onSubmit(event) {
   event.preventDefault() ;
-  //console.dir(e.currentTarget); //ref форма
-  //console.log(e.target); //ref button
+  //ловимо всі поля вводу на формі 
   const { elements: {delay, step, amount} } = event.currentTarget;
  
-  let krok = 0;
-  for (let i = 1; i <= amount.value; i += 1) {
-    if (i > 1) krok = step.value;
-    
-    const promise = createPromise(i, delay  + krok);
+  let countedDelay = Number(delay.value);
+  
+  for (let i = 1; i <= Number(amount.value); i += 1) {
+    if (i > 1) { countedDelay += Number(step.value); }
+    const promise = createPromise(i, countedDelay);
     promise
       .then(value => { console.log(value); })
       .catch(error => { console.log(error);})

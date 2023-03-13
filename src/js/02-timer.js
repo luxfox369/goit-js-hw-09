@@ -3,8 +3,99 @@ import flatpickr from 'flatpickr';
 // Додатковий імпорт стилів
 import 'flatpickr/dist/flatpickr.min.css';
 //Бібліотека очікує, що її ініціалізують на елементі input[type="text"], тому ми додали до HTML документу поле input#datetime-picker
+//Другим аргументом функції flatpickr(selector, options) можна передати необов'язковий об'єкт параметрів.
+const options = {
+  enableTime: true, //Boolean	Enables time picker
+  time_24hr: true, //Displays time picker in 24 hour mode without AM/PM selection when enabled.
+  defaultDate: new Date(), //String	Sets the initial selected date(s).
+  minuteIncrement: 1, //nteger	5	Adjusts the step for the minute input (incl. scrolling)
+  onClose(selectedDates) {
+    //Function(s) to trigger on every time the calendar is closed
+   // console.log(selectedDates[0]); //selectedDates - an array of Date objects selected by the user. When there are no dates selected, the array is empty.
+    countDownTimer.checkDelta(selectedDates[0]);
+  },
+};
+//*******   створюю клас ****************
+class Timer {
+  #idTimer = null;
+  #days = 0;
+  #hours = 0;
+  #minutes = 0;
+  #seconds = 0;
+  #onChangeCallback = () => {}; //люба функція зізовні яка буде щось робити з даними цього класа
+  constructor({ onChange } = {}) {
+    if (onChange) {
+      this.#onChangeCallback = onChange;
+      }
+   }
+  start(selectedDate) {
+      
+    delta = new Date(selectedDate) - Date.now();
+    console.log("delta from start",delta)
+    setFormToStopMode();
+    this.#calculateData(delta);
+    this.#idTimer = setInterval(() => {
+      this.#calculateData(delta);
+     }, 1000);
+  }
+    stop() {
+        setFormToStartMode();
+        clearInterval(this.#idTimer);
+  }
+  #calculateData() {
+    delta = selectedDate - Date.now();
+    console.log("delta from #calculateData", (delta/1000).toFixed(0));
+     const convertedDate = Timer.convertMs(delta); //повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 0}
+     dateForRender = Timer.addLeadingZero(convertedDate); //повертає обєкт {days: 00, hours: 00, minutes: 00, seconds: 00}
+     console.log(" dateForRender ",dateForRender);
+  };
+  static convertMs(ms) {
+    // Number of milliseconds per unit of time
+    const second = 1000;
+    const minute = second * 60;
+    const hour = minute * 60;
+    const day = hour * 24;
+    // Remaining days,hours,minutes,seconds
+    const days = Math.floor(ms / day);
+    const hours = Math.floor((ms % day) / hour);
+    const minutes = Math.floor(((ms % day) % hour) / minute);
+    const seconds = Math.floor((((ms % day) % hour) % minute) / second);
+    // console.log(" вийшло з convertMs(ms) ", { days, hours, minutes, seconds });
+    return { days, hours, minutes, seconds };
+  }
+  static addLeadingZero({ days, hours, minutes, seconds }) {
+    //з padStart повертає {days: 000, hours: 00, minutes: 00, seconds: 02}
+    const padDays = days.toString().padStart(2, '0'); //.padStart(3,'0')
+    const padHours = hours.toString().padStart(2, '0');
+    const padMinutes = minutes.toString().padStart(2, '0');
+    const padSeconds = seconds.toString().padStart(2, '0');
+    //console.log({ padDays, padHours, padMinutes, padSeconds });
+    return { padDays, padHours, padMinutes, padSeconds }; //{days: 00, hours: 00, minutes: 00, seconds: 00}
+  }
+  #updateData({ days = 0, hours = 0, minutes = 0, seconds = 0 } = {}) {
+    this.#days = days;
+    this.#hours = hours;
+    this.#minutes = minutes;
+    this.#seconds = seconds;
 
+   // this.#onChangeData();
+  }
+  checkDelta(date) {
+    let delta = new Date(date) - Date.now();
+    //console.log("delta  ", delta);
+    if (delta < 990) { //якщо  дата не в майбутньому delta < 1c
+      
+    return alert('Please choose a date in the future');
+    }
+    selectedDate = date;
+    refs.button.disabled = false;
+      return  selectedDate  ;
+    }
+}
 //посилання на html елементи
+let delta = 0;// щоб вивести в гдлбальну зону видтмості з flatpcr
+let selectedDate = 0; 
+let dateForRender = {};
 const refs = {
   input: document.querySelector('#datetime-picker'),
   button: document.querySelector('button[data-start]'),
@@ -15,29 +106,19 @@ const refs = {
   days: document.querySelector('[data-days]'),
   hours: document.querySelector('[data-hours]'),
   minutes: document.querySelector('[data-minutes]'),
-  seconds: document.querySelector('[data-data-seconds]'),
-}
-refs.button.disabled = true; //кнопка недоступна поки невибрали валідну дату (в майбутньому)
-let delta;  //число в мілісекундах  між 2-ма датами для обрахунку таймера
-
-//Другим аргументом функції flatpickr(selector, options) можна передати необов'язковий об'єкт параметрів.
-//Розберися, за що відповідає кожна властивість в документації «Options», і використовуй його у своєму коді.
-const options = {
-  enableTime: true, //Boolean	Enables time picker
-  time_24hr: true, //Displays time picker in 24 hour mode without AM/PM selection when enabled.
-  defaultDate: new Date(), //String	Sets the initial selected date(s).
-  minuteIncrement: 1, //nteger	5	Adjusts the step for the minute input (incl. scrolling)
-  onClose(selectedDates) {  //Function(s) to trigger on every time the calendar is closed
-      console.log(selectedDates[0]); //selectedDates - an array of Date objects selected by the user. When there are no dates selected, the array is empty.
-      checkedSelectedDateMs(selectedDates[0]);
-    },
+  seconds: document.querySelector('[data-seconds]'),
 };
-
 //привязую календар до input#datetime-picker
 flatpickr(refs.input, options);
+ refs.button.disabled = true; //кнопка доступна тільки після checkDelta
 
+const ACTION = {
+  START: 'start',
+  STOP: 'stop',
+};
 //Додаю стилі щоб поставити timer в центр
-refs.countDownTimer.style.cssText = 'display:flex;gap:10px;justify-content:center;font-size:25px;padding:10px;';
+refs.countDownTimer.style.cssText =
+  'display:flex;gap:10px;justify-content:center;font-size:25px;padding:10px;';
 refs.input.style.cssText = 'display:inline-block;text-align:center;';
 //обгортаю input+button в div щоб поставити в центр
 function wrap(el1, el2, wrapper) {
@@ -47,101 +128,48 @@ function wrap(el1, el2, wrapper) {
   wrapper.appendChild(el2);
 }
 wrap(refs.input, refs.button, document.createElement('form'));
-refForm = document.querySelector('form');
+const refForm = document.querySelector('form');
+refForm.setAttribute('data-action', 'start');
 refForm.style.cssText = 'display:flex;gap:5px;justify-content:center;';
 
 Array.from(refs.fields).map(item => {
-  item.style.cssText = 'display:flex;flex-direction:column;align-items: center;';
+  item.style.cssText =
+    'width:100px;display:flex;flex-direction:column;align-items: center;';
   item.style.border = '2px dotted grey';
   item.style.padding = '2px 6px';
 });
 //кінець налаштування стилів
+//створюємо клас з методами обробки даних
+const countDownTimer = new Timer({ onChange: render }); //на onChangeCallback передастся render
+//на форму вішаємо слухача щоб запускати timer
 
-//перевірка введеної дати викликается з onClose() метода з options flatpickr
-function checkedSelectedDateMs (selectedDate) {
-    let currentDataMS = new Date().getTime(); //ms від текучої дати до 01/01/1970 //= date.now()
-  //  console.log("currentDataMS ", currentDataMS);
-    const selectedDateMS = selectedDate.getTime(); //від вибраної дати число мс до 01/01/1970
-  //  console.log('selectedDateMS ', selectedDateMS);
-    delta = selectedDateMS - currentDataMS;    //різниця = число  ms
-    console.log('delta counted ', delta);
-    if (delta < 990) { //якщо  дата не в майбутньому delta < 1c
-        return alert("Please choose a date in the future");
-  }
-    refs.button.disabled = false; //клавіша start доступна але невідразу потрібну клацнути по чомусь іншому ???
-return selectedDateMS;
-}
-let i = 0;
-let idTimer = null;
-//на button start вішаємо слухача щоб запускати timer
-refs.button.addEventListener('click', start);
-
-function start() {
-    //перерахунок delta бо похибка між моментом вибору дати і натисненням start
-    currentDataMS = new Date().getTime();
-    delta = selectedDateMS - currentDataMS;
-   // refs.button.disabled = true;
-    if (!idTimer) { //захист від створення купи таймерів
-        countdown(delta);//щоб відразу спрацьовувало
-        idTimer = setInterval(countdown, 1000,delta);
-    }
-}
-function countdown(ms) {
-  console.log("from countdown(ms)",ms);
-  //   if (ms < 990) {   
-  //       clearInterval(idTimer);
-  //       //тут функція reset timer на нулі
-  //       render({days: 0, hours: 00, minutes: 00, seconds: 00,});
-  //   }
-  const result = convertMs(ms);                // повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 0}
-  console.log("result from convertMs(ms)",result);
-    //  const paddedResult = addLeadingZero(result); //повертає обєкт{days: 0, hours: 00, minutes: 00, seconds: 00}
-  //   render(paddedResult);                      //з обєкта розкидає в розмітку
-  //  // render(addLeadingZero(convertMs(ms))); 
-    
-    
-};
-
-function convertMs(ms) {
-  // Number of milliseconds per unit of time
-  const second = 1000;
-  const minute = second * 60;
-  const hour = minute * 60;
-  const day = hour * 24;
-
-  // Remaining days
-  const days = Math.floor(ms / day);
-  // Remaining hours
-  const hours = Math.floor((ms % day) / hour);
-  // Remaining minutes
-  const minutes = Math.floor(((ms % day) % hour) / minute);
-  // Remaining seconds
-  const seconds = Math.floor((((ms % day) % hour) % minute) / second);
-
-  return { days, hours, minutes, seconds };
-}
-
-// console.log(convertMs(2000)); // {days: 0, hours: 0, minutes: 0, seconds: 2}
-// console.log(convertMs(140000)); // {days: 0, hours: 0, minutes: 2, seconds: 20}
-// console.log(convertMs(24140000)); // {days: 0, hours: 6 minutes: 42, seconds: 20}
-
-function addLeadingZero({ days, hours, minutes, seconds }) {     //з padStart повертає {days: 000, hours: 00, minutes: 00, seconds: 02}
- //Напиши функцію addLeadingZero(result) з padStart повертає {days: 0, hours: 00, minutes: 00, seconds: 00}
-    //Кількість днів може складатися з більше, ніж двох цифр.
-  const days    = string(days); //.padStart(3,'0')
-  const hours   = string(hours.padStart(2,'0'));
-  const minutes = string(hours.padStart(2,'0'));
-  const seconds = string(hours.padStart(2,'0'));
-    return { days, hours, minutes, seconds };   //{days: 0, hours: 00, minutes: 00, seconds: 00}
-};
-function render({ days, hours, minutes, seconds }) { //cюди заходить {days: 0, hours: 00, minutes: 00, seconds: 00}
- //функція яка перемальовує html:
-  refs.days.innerHTML = days.value;
-  refs.hours.innerHTML = hours.value;
-  refs.minutes.innerHTML = minutes.value;
-  refs.seconds.innerHTML = seconds.value;
-
- // в (refs.days/refs.hours/refs.minutes/refs.seсonds) розкидує 
- //{ days.value, hours.value, minutes.value, seconds.value } )
+refForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (e.currentTarget.dataset.action === ACTION.START) {
+    countDownTimer.start(selectedDate);
    
+  } else {
+    countDownTimer.stop();
+    setFormToStartMode();
+  }
+});
+
+function setFormToStartMode() {
+  refForm.dataset.action = ACTION.START;
+  refs.button.textContent = ACTION.START;
+  refs.button.disabled = false;
+}
+
+function setFormToStopMode() {
+  refForm.dataset.action = ACTION.STOP;
+  refs.button.textContent = ACTION.STOP;
+  refs.button.disabled = true;
+}
+//onChangeCallback
+function render(dateForRender) {
+  console.log("dateForRender from render ",dateForRender)
+  refs.days.textContent = dateForRender .days;
+  refs.hours.textContent = dateForRender .hours;
+  refs.minutes.textContent = dateForRender .minutes;
+  refs.seconds.textContent = dateForRender .seconds;;
 }

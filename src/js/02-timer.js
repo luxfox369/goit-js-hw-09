@@ -11,11 +11,11 @@ const options = {
   minuteIncrement: 1, //nteger	5	Adjusts the step for the minute input (incl. scrolling)
   onClose(selectedDates) {
     //Function(s) to trigger on every time the calendar is closed
-   // console.log(selectedDates[0]); //selectedDates - an array of Date objects selected by the user. When there are no dates selected, the array is empty.
-    countDownTimer.checkDelta(selectedDates[0]);
+    // console.log(selectedDates[0]); //selectedDates - an array of Date objects selected by the user. When there are no dates selected, the array is empty.
+    Timer.checkDate(selectedDates[0]);
   },
 };
-//*******   створюю клас ****************
+//*******   створюю клас таймера ****************
 class Timer {
   #idTimer = null;
   #days = 0;
@@ -26,29 +26,25 @@ class Timer {
   constructor({ onChange } = {}) {
     if (onChange) {
       this.#onChangeCallback = onChange;
-      }
-   }
+    }
+  }
   start(selectedDate) {
-      
     delta = new Date(selectedDate) - Date.now();
-    console.log("delta from start",delta)
     setFormToStopMode();
     this.#calculateData(delta);
     this.#idTimer = setInterval(() => {
       this.#calculateData(delta);
-     }, 1000);
+    }, 1000);
   }
-    stop() {
-        setFormToStartMode();
-        clearInterval(this.#idTimer);
+  stop() {
+    setFormToStartMode();
+    clearInterval(this.#idTimer);
   }
   #calculateData() {
-    delta = selectedDate - Date.now();
-    console.log("delta from #calculateData", (delta/1000).toFixed(0));
-     const convertedDate = Timer.convertMs(delta); //повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 0}
-     dateForRender = Timer.addLeadingZero(convertedDate); //повертає обєкт {days: 00, hours: 00, minutes: 00, seconds: 00}
-     console.log(" dateForRender ",dateForRender);
-  };
+    delta = selectedDate - Date.now(); //перераховуємо delta бо  Date.now() змінилось між вибором дати і натисненням кнопки
+   // console.log("delta seconds from calculateData", (delta / 1000).toFixed(0));
+    this.#updateInstance(Timer.convertMs(delta)); //повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 0}
+  }
   static convertMs(ms) {
     // Number of milliseconds per unit of time
     const second = 1000;
@@ -64,38 +60,48 @@ class Timer {
     return { days, hours, minutes, seconds };
   }
   static addLeadingZero({ days, hours, minutes, seconds }) {
-    //з padStart повертає {days: 000, hours: 00, minutes: 00, seconds: 02}
-    const padDays = days.toString().padStart(2, '0'); //.padStart(3,'0')
-    const padHours = hours.toString().padStart(2, '0');
-    const padMinutes = minutes.toString().padStart(2, '0');
-    const padSeconds = seconds.toString().padStart(2, '0');
-    //console.log({ padDays, padHours, padMinutes, padSeconds });
-    return { padDays, padHours, padMinutes, padSeconds }; //{days: 00, hours: 00, minutes: 00, seconds: 00}
+    const  pDays = days.toString().padStart(2, '0');
+    const  pHours = hours.toString().padStart(2, '0');
+    const  pMinutes = minutes.toString().padStart(2, '0');
+    const  pSeconds = seconds.toString().padStart(2, '0');
+    return { pDays, pHours, pMinutes, pSeconds }; // повертає{days: 00, hours: 00, minutes: 00, seconds: 00}
   }
-  #updateData({ days = 0, hours = 0, minutes = 0, seconds = 0 } = {}) {
+  #updateInstance({ days = 0, hours = 0, minutes = 0, seconds = 0 } = {}) {
     this.#days = days;
     this.#hours = hours;
     this.#minutes = minutes;
     this.#seconds = seconds;
 
-   // this.#onChangeData();
+    this.#onChangeData();
   }
-  checkDelta(date) {
-    let delta = new Date(date) - Date.now();
-    //console.log("delta  ", delta);
-    if (delta < 990) { //якщо  дата не в майбутньому delta < 1c
-      
+  #onChangeData() {
+    const dataForRendering =
+       Timer.addLeadingZero({
+          days: countDown.#days,
+          hours: countDown.#hours,
+          minutes: countDown.#minutes,
+          seconds: countDown.#seconds
+        });
+    this.#onChangeCallback( dataForRendering);
+  }
+
+   static checkDate(date) {
+     let delta = new Date(date) - Date.now();
+    if (delta < 990) {
     return alert('Please choose a date in the future');
     }
     selectedDate = date;
     refs.button.disabled = false;
-      return  selectedDate  ;
-    }
+    return selectedDate;
+  } 
+  resetData() {
+    this.#updateInstance({ days : 0, hours : 0, minutes : 0, seconds : 0 });
+  }
 }
-//посилання на html елементи
-let delta = 0;// щоб вивести в гдлбальну зону видтмості з flatpcr
-let selectedDate = 0; 
-let dateForRender = {};
+
+let delta = 0; // щоб вивести в гдлбальну зону видтмості з flatpcr
+let selectedDate = 0;
+//посилання на елементи розмітки
 const refs = {
   input: document.querySelector('#datetime-picker'),
   button: document.querySelector('button[data-start]'),
@@ -108,10 +114,10 @@ const refs = {
   minutes: document.querySelector('[data-minutes]'),
   seconds: document.querySelector('[data-seconds]'),
 };
-//привязую календар до input#datetime-picker
+//привязую календар який керує елементом форми  з id = "#datetime-picker"
 flatpickr(refs.input, options);
- refs.button.disabled = true; //кнопка доступна тільки після checkDelta
-
+refs.button.disabled = true; //кнопка доступна тільки після checkDelta
+//глобальні константи
 const ACTION = {
   START: 'start',
   STOP: 'stop',
@@ -139,37 +145,43 @@ Array.from(refs.fields).map(item => {
   item.style.padding = '2px 6px';
 });
 //кінець налаштування стилів
-//створюємо клас з методами обробки даних
-const countDownTimer = new Timer({ onChange: render }); //на onChangeCallback передастся render
-//на форму вішаємо слухача щоб запускати timer
 
-refForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    if (e.currentTarget.dataset.action === ACTION.START) {
-    countDownTimer.start(selectedDate);
-   
-  } else {
-    countDownTimer.stop();
-    setFormToStartMode();
+//**********створюємо екземпляр класу Timer ***********
+const countDown = new Timer({ onChange: render }); //на onChangeCallback передасться render
+
+//на input вішаємо слухача щоб при спробі змінити дату кнопка таймера стала недоступною ,знімаємо таймер,і обнулюємо поля екземпляра і розмітку
+refs.input.addEventListener('input', () => {
+  refs.button.disabled = true;
+  countDown.stop();
+  countDown.resetData();
+});
+//  на формі вішаємо слухача щоб при натисненні submit запускати timer
+refForm.addEventListener('submit', e => {
+  e.preventDefault();
+  if (e.currentTarget.dataset.action === ACTION.START) { //якщо на формі атрибут data-action === 'start'
+    countDown.start(selectedDate); //на створеному екземплярі класу Timer запускаємо метод start з датою після виходу з flatpcr = options.onClose()
+    setFormToStopMode()            //змінюємо data-action = 'stop,змінюємо напис на кнопці на stop/поле вводу недоступне  
+  } else {                         //якщо на формі атрибут data-action !== 'start'
+    countDown.stop();             //запускаємо метод stop на екземплярі
+    setFormToStartMode();         //змінюємо data-action = 'start,змінюємо напис на кнопці на start/поле вводу доступне 
   }
 });
 
 function setFormToStartMode() {
   refForm.dataset.action = ACTION.START;
   refs.button.textContent = ACTION.START;
-  refs.button.disabled = false;
+  refs.input.disabled = false;
 }
 
 function setFormToStopMode() {
   refForm.dataset.action = ACTION.STOP;
   refs.button.textContent = ACTION.STOP;
-  refs.button.disabled = true;
+  refs.input.disabled = true;
 }
-//onChangeCallback
-function render(dateForRender) {
-  console.log("dateForRender from render ",dateForRender)
-  refs.days.textContent = dateForRender .days;
-  refs.hours.textContent = dateForRender .hours;
-  refs.minutes.textContent = dateForRender .minutes;
-  refs.seconds.textContent = dateForRender .seconds;;
+//onChangeCallback який вказаний у властивості onChange і переданий при створенні екземпляра
+function render({ pDays, pHours, pMinutes, pSeconds }) {
+  refs.days.textContent =  pDays;
+  refs.hours.textContent = pHours;
+  refs.minutes.textContent =  pMinutes;
+  refs.seconds.textContent = pSeconds;
 }

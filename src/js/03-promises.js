@@ -31,5 +31,6 @@ function onSubmit(event) {
       .then(value => { Notiflix.Notify.success(value); })
       .catch(error => { Notiflix.Notify.failure(error);})
   }
+  event.currentTarget.reset();
 }
 

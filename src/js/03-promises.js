@@ -26,11 +26,13 @@ function onSubmit(event) {
   
   for (let i = 1; i <= Number(amount.value); i += 1) {
     if (i > 1) { countedDelay += Number(step.value); }
+    Notiflix.Loading.standard('Creating promises...');
     const promise = createPromise(i, countedDelay);
     promise
       .then(value => { Notiflix.Notify.success(value); })
       .catch(error => { Notiflix.Notify.failure(error);})
   }
+  Notiflix.Loading.remove(2000);
   event.currentTarget.reset();
 }
 

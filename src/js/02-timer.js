@@ -42,8 +42,13 @@ class Timer {
   }
   #calculateData() {
     delta = selectedDate - Date.now(); //перераховуємо delta бо  Date.now() змінилось між вибором дати і натисненням кнопки
-   // console.log("delta seconds from calculateData", (delta / 1000).toFixed(0));
-    this.#updateInstance(Timer.convertMs(delta)); //повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 0}
+    if (delta > 990) {
+      this.#updateInstance(Timer.convertMs(delta)); //повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 0}
+    }
+    else {
+      this.resetData();
+      setFormToStartMode();
+    }
   }
   static convertMs(ms) {
     // Number of milliseconds per unit of time

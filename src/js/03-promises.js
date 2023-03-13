@@ -1,4 +1,4 @@
-
+import Notiflix from 'notiflix';
 function createPromise(position, delay) {
   return new Promise((resolve, reject) => {
     const shouldResolve = Math.random() > 0.3;
@@ -28,8 +28,8 @@ function onSubmit(event) {
     if (i > 1) { countedDelay += Number(step.value); }
     const promise = createPromise(i, countedDelay);
     promise
-      .then(value => { console.log(value); })
-      .catch(error => { console.log(error);})
+      .then(value => { Notiflix.Notify.success(value); })
+      .catch(error => { Notiflix.Notify.failure(error);})
   }
 }
 

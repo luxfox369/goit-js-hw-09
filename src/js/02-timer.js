@@ -1,3 +1,4 @@
+
 // Описаний в документації
 import flatpickr from 'flatpickr';
 // Додатковий імпорт стилів

@@ -32,7 +32,7 @@ function onSubmit(event) {
       .then(value => { Notiflix.Notify.success(value); })
       .catch(error => { Notiflix.Notify.failure(error);})
   }
-  Notiflix.Loading.remove(2000);
+  Notiflix.Loading.remove(3000);
   event.currentTarget.reset();
 }
 

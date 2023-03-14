@@ -13,21 +13,34 @@ refs.btnStart.addEventListener('click', start);
 refs.btnStop.addEventListener('click', stop);
 
 let idTimer = null;//оголошуємо idTimer в глобальній зоні видимості
-
+setToStart();
+console.log("idTimer", idTimer);
 function start() {
-    refs.btnStart.disabled = true; //після запуска кнопка start недоступна //або refs.btnStart.removeEventListener('click', start);
+    setToStop();
     setColor(); //щоб перша зміна відбулась відразу
-   idTimer = setInterval(setColor, 1000);//заплановано що 1с запускати setColor до бескінечності
+    idTimer = setInterval(setColor, 1000);//заплановано що 1с запускати setColor до бескінечності
+    console.log("idTimer", idTimer);
 };
 function stop() {
+    setToStart();
     clearInterval(idTimer); //по id таймера setInterval відміняємо що 1с запускати setColor
-    refs.btnStart.disabled = false; //кнопка start знову доступна //або refs.btnStart.addEventListener('click', start);
+    console.log("idTimer", idTimer);
+    
 };
 //зміна кольору body 
 function setColor() {
     let bgColor = getRandomHexColor(); //генеруємо колір
-    console.log('bgColor ', bgColor);
     refs.body.style.backgroundColor = bgColor; //змінюємо колір body
-};
+}
+function setToStart() {
+   refs.btnStart.disabled = false; //кнопка start  доступна 
+    refs.btnStop.disabled = true;  //кнопка stop НЕ  доступна 
+}
+function setToStop() {
+   refs.btnStart.disabled = true; //кнопка start НЕ  доступна 
+    refs.btnStop.disabled = false; //кнопка stop  доступна 
+}
+
+
 
 

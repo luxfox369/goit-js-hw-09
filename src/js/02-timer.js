@@ -1,21 +1,28 @@
 
-// Описаний в документації
-import flatpickr from 'flatpickr';
-// Додатковий імпорт стилів
-import 'flatpickr/dist/flatpickr.min.css';
-//Бібліотека очікує, що її ініціалізують на елементі input[type="text"], тому ми додали до HTML документу поле input#datetime-picker
-//Другим аргументом функції flatpickr(selector, options) можна передати необов'язковий об'єкт параметрів.
+import flatpickr from "flatpickr";
+import Notiflix from "notiflix";
+//Додатковий імпорт стилів
+import "flatpickr/dist/flatpickr.min.css";
+
 const options = {
-  enableTime: true, //Boolean	Enables time picker
+  enableTime: true, //Enables time picker
   time_24hr: true, //Displays time picker in 24 hour mode without AM/PM selection when enabled.
-  defaultDate: new Date(), //String	Sets the initial selected date(s).
-  minuteIncrement: 1, //nteger	5	Adjusts the step for the minute input (incl. scrolling)
-  onClose(selectedDates) {
-    //Function(s) to trigger on every time the calendar is closed
-    // console.log(selectedDates[0]); //selectedDates - an array of Date objects selected by the user. When there are no dates selected, the array is empty.
+  defaultDate: new Date(),//String	null	
+   // the initial selected date(s).
+  //If you're using mode: "multiple" or a range calendar supply an Array of Date objects
+  // or an Array of date strings which follow your dateFormat.
+  minuteIncrement: 1, //Integer	5	Adjusts the step for the minute input (incl. scrolling)
+  onClose(selectedDates) { //null	Function(s) to trigger on every time the calendar is closed
+    // console.log(selectedDates[0]);
     Timer.checkDate(selectedDates[0]);
+    //Метод onClose() з об'єкта параметрів викликається щоразу під час закриття елемента інтерфейсу,
+    // який створює flatpickr.Саме у ньому варто обробляти дату, обрану користувачем.
+    //Параметр selectedDates - це масив обраних дат, тому ми беремо перший елемент.
   },
 };
+let selectedDate = 0;
+let delta = 0;
+
 //*******   створюю клас таймера ****************
 class Timer {
   #idTimer = null;
@@ -62,7 +69,7 @@ class Timer {
     const hours = Math.floor((ms % day) / hour);
     const minutes = Math.floor(((ms % day) % hour) / minute);
     const seconds = Math.floor((((ms % day) % hour) % minute) / second);
-    // console.log(" вийшло з convertMs(ms) ", { days, hours, minutes, seconds });
+    console.log(" з convertMs(ms) ", { days, hours, minutes, seconds });
     return { days, hours, minutes, seconds };
   }
   static addLeadingZero({ days, hours, minutes, seconds }) {
@@ -94,7 +101,9 @@ class Timer {
    static checkDate(date) {
      let delta = new Date(date) - Date.now();
     if (delta < 990) {
-    return alert('Please choose a date in the future');
+   // return alert('Please choose a date in the future');
+      return Notiflix.Notify.failure('Please choose a date in the future');
+
     }
     selectedDate = date;
     refs.button.disabled = false;
@@ -105,34 +114,31 @@ class Timer {
   }
 }
 
-let delta = 0; // щоб вивести в гдлбальну зону видтмості з flatpcr
-let selectedDate = 0;
-//посилання на елементи розмітки
+
+
 const refs = {
   input: document.querySelector('#datetime-picker'),
   button: document.querySelector('button[data-start]'),
-  countDownTimer: document.querySelector('.timer'),
-  paragraph: document.querySelector('p'),
+  countDownTimer : document.querySelector('.timer'),
   fields: document.querySelectorAll('.field'),
-  //посилання на поля таймера
   days: document.querySelector('[data-days]'),
   hours: document.querySelector('[data-hours]'),
   minutes: document.querySelector('[data-minutes]'),
-  seconds: document.querySelector('[data-seconds]'),
+  seconds: document.querySelector('[data-seconds]')
 };
-//привязую календар який керує елементом форми  з id = "#datetime-picker"
-flatpickr(refs.input, options);
-refs.button.disabled = true; //кнопка доступна тільки після checkDelta
+
+flatpickr(refs.input, options); //очікуємо selectedDate
+//refs.button.disabled = true;
 //глобальні константи
 const ACTION = {
   START: 'start',
   STOP: 'stop',
 };
+
 //Додаю стилі щоб поставити timer в центр
-refs.countDownTimer.style.cssText =
-  'display:flex;gap:10px;justify-content:center;font-size:25px;padding:10px;';
-refs.input.style.cssText = 'display:inline-block;text-align:center;';
-//обгортаю input+button в div щоб поставити в центр
+refs.countDownTimer.style.cssText = 'display:flex;gap:10px; justify-content:center;font-size:25px;padding:10px';
+refs.input.style.cssText = 'display:inline-block;height:50px;font-size:25px;padding-left:50px;color:blue;';
+//обгортаю input+button в form щоб поставити в центр
 function wrap(el1, el2, wrapper) {
   el1.parentNode.insertBefore(wrapper, el1);
   wrapper.appendChild(el1);
@@ -151,23 +157,22 @@ Array.from(refs.fields).map(item => {
   item.style.padding = '2px 6px';
 });
 //кінець налаштування стилів
-
-//**********створюємо екземпляр класу Timer ***********
-const countDown = new Timer({ onChange: render }); //на onChangeCallback передасться render
-
+//створюю екземпляр
+const countDown = new Timer({ onChange: render });
 //на input вішаємо слухача щоб при спробі змінити дату кнопка таймера стала недоступною ,знімаємо таймер,і обнулюємо поля екземпляра і розмітку
 refs.input.addEventListener('input', () => {
   refs.button.disabled = true;
   countDown.stop();
   countDown.resetData();
 });
-//  на формі вішаємо слухача щоб при натисненні submit запускати timer
+
+//  на формі вішаємо слухача щоб при натисненні submit(start) запускати timer
 refForm.addEventListener('submit', e => {
   e.preventDefault();
   if (e.currentTarget.dataset.action === ACTION.START) { //якщо на формі атрибут data-action === 'start'
     countDown.start(selectedDate); //на створеному екземплярі класу Timer запускаємо метод start з датою після виходу з flatpcr = options.onClose()
     setFormToStopMode()            //змінюємо data-action = 'stop,змінюємо напис на кнопці на stop/поле вводу недоступне  
-  } else {                         //якщо на формі атрибут data-action !== 'start'
+  } else {                         //якщо на формі атрибут  НЕ data-action !== 'start'
     countDown.stop();             //запускаємо метод stop на екземплярі
     setFormToStartMode();         //змінюємо data-action = 'start,змінюємо напис на кнопці на start/поле вводу доступне 
   }

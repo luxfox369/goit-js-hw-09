@@ -1,46 +1,44 @@
 function getRandomHexColor() {
   return `#${Math.floor(Math.random() * 16777215).toString(16)}`;
-  
-}
-//посилання 
+  }
 const refs = {
-    body: document.body,
-    btnStart: document.querySelector("button[data-start]"),
-    btnStop: document.querySelector("button[data-stop]"),
+ body:document.body,   
+ butStart : document.querySelector("button[data-start]"),
+ butStop : document.querySelector("button[data-stop]"),
 }
-//слухачі подій
-refs.btnStart.addEventListener('click', start);
-refs.btnStop.addEventListener('click', stop);
+refs.butStart.disabled = false;
+refs.butStop.disabled = true;
 
-let idTimer = null;//оголошуємо idTimer в глобальній зоні видимості
-setToStart();
-console.log("idTimer", idTimer);
-function start() {
-    setToStop();
-    setColor(); //щоб перша зміна відбулась відразу
-    idTimer = setInterval(setColor, 1000);//заплановано що 1с запускати setColor до бескінечності
-    console.log("idTimer", idTimer);
-};
-function stop() {
-    setToStart();
-    clearInterval(idTimer); //по id таймера setInterval відміняємо що 1с запускати setColor
-    console.log("idTimer", idTimer);
-    
-};
-//зміна кольору body 
+refs.butStart.addEventListener("click", onStart);
+refs.butStop.addEventListener("click", onStop);
+let timerID = null;
+
+function onStart() {
+    setColor();
+    butTons();
+    timerID = setInterval(setColor, 1000);
+    console.log(timerID);
+}
+function onStop() {
+    clearInterval(timerID)
+    console.log(timerID);
+    butTons();
+   }
 function setColor() {
-    let bgColor = getRandomHexColor(); //генеруємо колір
-    refs.body.style.backgroundColor = bgColor; //змінюємо колір body
+   refs.body.style.backgroundColor= getRandomHexColor();
 }
-function setToStart() {
-   refs.btnStart.disabled = false; //кнопка start  доступна 
-    refs.btnStop.disabled = true;  //кнопка stop НЕ  доступна 
+function butTons() {
+    if (refs.butStart.disabled ){
+        refs.butStart.disabled = false;
+    }
+    else {
+        refs.butStart.disabled = true;
+    }
+    
+    if (refs.butStop.disabled) {
+        refs.butStop.disabled = false;
+    } 
+    else {
+        refs.butStop.disabled = true;
+    }
 }
-function setToStop() {
-   refs.btnStart.disabled = true; //кнопка start НЕ  доступна 
-    refs.btnStop.disabled = false; //кнопка stop  доступна 
-}
-
-
-
-

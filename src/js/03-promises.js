@@ -1,40 +1,36 @@
 import Notiflix from "notiflix";
 const arrPromises = [];
 let markUp = '<h3>Масив промісів:</h3>';
-function createPromise(position, delay) {
-  return new Promise((resolve, reject) => {
-    const shouldResolve = Math.random() > 0.5;
-    setTimeout(() => {
-      if (shouldResolve) {
-        resolve( `✅ Fulfilled promise ${position} in ${delay}ms` );
-             } else {
-        reject(`❌ Rejected promise ${position} in ${delay}ms`);
-      }
-    }, delay);
-  });
-}
+
 
 const refs = {
   form: document.querySelector(".form"),
-  input: document.querySelector("input"),
   submit: document.querySelector(".submit"),
   buttons: document.querySelector(".buttons"),
   all: document.querySelector(".all"),
   race: document.querySelector(".race"),
   any: document.querySelector(".any"),
   allSet: document.querySelector(".allSettled"),
+  reset: document.querySelector(".reset"),
   promises: document.querySelector(".promises")
 }
- // кнопки функцій недоступні
+ //вішаємо прослуховувач  на кнопки
+  refs.all.addEventListener("click", allPromise);
+  refs.race.addEventListener("click", racePromise);
+  refs.any.addEventListener("click", anyPromise);
+  refs.allSet.addEventListener("click", allSet);
+  refs.form.addEventListener("submit", onSubmit);
+  refs.reset.addEventListener("click", onReset);
+ // кнопки функцій недоступні крім створення промісів
 disabledButtons();
 //стилі
 refs.form.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:10px;padding:5px';
-refs.submit.style.cssText = 'width:150px;height:50px;padding:5px';
+refs.submit.style.cssText = 'width:100px;height:50px;padding:5px';
 refs.buttons.style.cssText = 'display:flex;gap:10px;justify-content:center;height:50px;font-size:30px;padding:5px';
-//прослуховувач кнопки
-refs.form.addEventListener("submit", onSubmit);
+
+
 //створення промісів
-;
+
 function onSubmit(e) {
   e.preventDefault();
   //ловимо всі input форми  по name 
@@ -52,8 +48,8 @@ function onSubmit(e) {
     let promise = createPromise(i, nDelay);
    
     promise
-      .then(data => {Notiflix.Notify.success(data);markUp   += `<p> ${data}</p>` }) // 
-      .catch(error => {Notiflix.Notify.failure(error);markUp += `<p> ${error}</p>` }) //
+      .then(data => {Notiflix.Notify.success(data);markUp   += `<p style="font-size:12px"> ${data}</p>` }) // 
+      .catch(error => {Notiflix.Notify.failure(error);markUp += `<p style="font-size:12px"> ${error}</p>` }) //
       
     //формуємо масив отриманих промісів для подальших функцій
     arrPromises.push(promise);
@@ -61,30 +57,37 @@ function onSubmit(e) {
   
   }
   setTimeout(() => {
-    console.log(markUp);
+    //console.log(markUp);
     refs.promises.innerHTML = markUp;
-    Notiflix.Loading.remove(3000); //забираємо колесо через 3с
-    enabledButtons();
-   
-  }, nDelay+nStep*nAmount);
+    Notiflix.Loading.remove(1000); //забираємо колесо через 1с
+    enabledButtons(); //кнопки функцій доступні
+     }, nDelay+nStep*nAmount); //малювати/відкривати кнопки через затримку коли всі промісі сетлед
   
-   
-  e.currentTarget.reset();
+  refs.reset.addEventListener("click", onReset); 
+  
+}
+//створення проміса
+function createPromise(position, delay) {
+  return new Promise((resolve, reject) => {
+    const shouldResolve = Math.random() > 0.5;
+    setTimeout(() => {
+      if (shouldResolve) {
+        resolve( `✅ Fulfilled promise ${position} in ${delay}ms` );
+             } else {
+        reject(`❌ Rejected promise ${position} in ${delay}ms`);
+      }
+    }, delay);
+  });
 }
  
-  //вішаємо функції на кнопки
-  refs.all.addEventListener("click", allPromise);
-  refs.race.addEventListener("click", racePromise);
-  refs.any.addEventListener("click", anyPromise);
-  refs.allSet.addEventListener("click", allSet);
-  
-  
  //кнопки функцій недоступні
  function disabledButtons() {
   refs.all.disabled = true;
   refs.race.disabled = true;
   refs.any.disabled = true;
-  refs.allSet.disabled = true;
+   refs.allSet.disabled = true;
+   refs.reset.disabled = true;
+   refs.submit.disabled = false;
 }
 
 
@@ -94,6 +97,8 @@ function enabledButtons() {
   refs.race.disabled = false;
   refs.any.disabled = false;
   refs.allSet.disabled = false;
+  refs.reset.disabled = false;
+  refs.submit.disabled = true;
 }
 //функції над масивом промісів
 function allPromise (){
@@ -118,11 +123,16 @@ function allSet() {
 }
 
 
-function clearListener() {
+function onReset() {
+  //e.currentTarget.reset();
+  refs.form.reset();
+  refs.promises.innerHTML = "";
+  disabledButtons();
   refs.all.removeEventListener("click", allPromise);
   refs.race.removeEventListener("click", racePromise);
   refs.any.removeEventListener("click", anyPromise);
   refs.allSet.removeEventListener("click", allSet);
+  refs.reset.removeEventListener("click", onReset);
 }
 
 

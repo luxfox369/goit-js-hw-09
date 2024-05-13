@@ -56,7 +56,7 @@ function onSubmit(e) {
     //намалюємо отримані проміси на сторінці через markUp
   
   }
-  setTimeout(() => {
+  setTimeout(() => { //щоб намалювались проміси на сторінці після створення всіх
     //console.log(markUp);
     refs.promises.innerHTML = markUp;
     Notiflix.Loading.remove(1000); //забираємо колесо через 1с

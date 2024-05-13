@@ -1,6 +1,6 @@
 import Notiflix from "notiflix";
-const arrPromises = [];
-let markUp = '<h3>Масив промісів:</h3>';
+let arrPromises = [];
+let markUp = '<h3>Created promises:</h3>';
 
 
 const refs = {
@@ -124,15 +124,16 @@ function allSet() {
 
 
 function onReset() {
-  //e.currentTarget.reset();
   refs.form.reset();
   refs.promises.innerHTML = "";
+  arrPromises = [];
+  markUp = '<h3>Created promises:</h3>';
   disabledButtons();
-  refs.all.removeEventListener("click", allPromise);
+  /*refs.all.removeEventListener("click", allPromise);
   refs.race.removeEventListener("click", racePromise);
   refs.any.removeEventListener("click", anyPromise);
   refs.allSet.removeEventListener("click", allSet);
-  refs.reset.removeEventListener("click", onReset);
+  refs.reset.removeEventListener("click", onReset);*/
 }
 
 

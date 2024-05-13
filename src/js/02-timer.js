@@ -37,9 +37,9 @@ class Timer {
     }
   }
   start(selectedDate) {
-    delta = new Date(selectedDate) - Date.now();
-    setFormToStopMode();
-    this.#calculateData(delta);
+    delta = new Date(selectedDate) - Date.now(); //вираховуємо delta = ms 
+    setFormToStopMode();//на форму data-action= stop на кнопку напис stop
+    this.#calculateData(delta); //щоб відразу виконалось а не через 1с 
     this.#idTimer = setInterval(() => {
       this.#calculateData(delta);
     }, 1000);
@@ -48,14 +48,14 @@ class Timer {
     setFormToStartMode();
     clearInterval(this.#idTimer);
   }
-  #calculateData() {
-    delta = selectedDate - Date.now(); //перераховуємо delta бо  Date.now() змінилось між вибором дати і натисненням кнопки
-    if (delta > 990) {
+  #calculateData() { //добавила new Date(selectedDate) було selectedDate
+    delta = new Date(selectedDate) - Date.now(); //перераховуємо delta бо  Date.now() змінилось між вибором дати і натисненням кнопки
+    if (delta > 990) { //якщо дата в майбутньому
       this.#updateInstance(Timer.convertMs(delta)); //повертає обєкт {days: 0, hours: 0, minutes: 0, seconds: 0}
     }
-    else {
-      this.resetData();
-      setFormToStartMode();
+    else { //якщо дата НЕ в майбутньому
+      this.resetData();//   this.#days/#hours/#minutes/#seconds = нулі
+      setFormToStartMode();//в форму data-action = start ,на кнопці напис start
     }
   }
   static convertMs(ms) {
@@ -72,7 +72,7 @@ class Timer {
     console.log(" з convertMs(ms) ", { days, hours, minutes, seconds });
     return { days, hours, minutes, seconds };
   }
-  static addLeadingZero({ days, hours, minutes, seconds }) {
+  static addLeadingZero({ days, hours, minutes, seconds }) { //добаляю ноль якщо не 2 знака виклик в onChangeData
     const  pDays = days.toString().padStart(2, '0');
     const  pHours = hours.toString().padStart(2, '0');
     const  pMinutes = minutes.toString().padStart(2, '0');
@@ -84,12 +84,11 @@ class Timer {
     this.#hours = hours;
     this.#minutes = minutes;
     this.#seconds = seconds;
-
-    this.#onChangeData();
+    this.#onChangeData();//
   }
-  #onChangeData() {
+  #onChangeData() { //виклик в #updateInstance
     const dataForRendering =
-       Timer.addLeadingZero({
+       Timer.addLeadingZero({ //домальовую нулі якщо не 2 знаки
           days: countDown.#days,
           hours: countDown.#hours,
           minutes: countDown.#minutes,
@@ -128,7 +127,7 @@ const refs = {
 };
 
 flatpickr(refs.input, options); //очікуємо selectedDate
-//refs.button.disabled = true;
+refs.button.disabled = true;
 //глобальні константи
 const ACTION = {
   START: 'start',
@@ -159,22 +158,25 @@ Array.from(refs.fields).map(item => {
 //кінець налаштування стилів
 //створюю екземпляр
 const countDown = new Timer({ onChange: render });
-//на input вішаємо слухача щоб при спробі змінити дату кнопка таймера стала недоступною ,знімаємо таймер,і обнулюємо поля екземпляра і розмітку
+//на input вішаємо слухача щоб при виборі дати кнопка таймера стала недоступною ,знімаємо таймер,
+//і обнулюємо поля екземпляра і розмітку
 refs.input.addEventListener('input', () => {
   refs.button.disabled = true;
-  countDown.stop();
-  countDown.resetData();
+  countDown.stop();//запускаю setFormToStartMod /clearInterval
+  countDown.resetData(); //виклик #updateInstance з нулями
+  //#updateInstance це на екземплярі this.#days/#hours/#minutes/#seconds = нулі
 });
 
-//  на формі вішаємо слухача щоб при натисненні submit(start) запускати timer
+//  на формі вішаю слухача щоб при натисненні submit(start) запускати рахунок timer
 refForm.addEventListener('submit', e => {
   e.preventDefault();
   if (e.currentTarget.dataset.action === ACTION.START) { //якщо на формі атрибут data-action === 'start'
-    countDown.start(selectedDate); //на створеному екземплярі класу Timer запускаємо метод start з датою після виходу з flatpcr = options.onClose()
-    setFormToStopMode()            //змінюємо data-action = 'stop,змінюємо напис на кнопці на stop/поле вводу недоступне  
+    countDown.start(selectedDate); //на  екземплярі Timer запускаємо метод start з датою доступною після виходу з flatpcr в options.onClose()
+    setFormToStopMode()            //на форму data-action = 'stop, напис на кнопці на stop/поле вводу недоступне  
   } else {                         //якщо на формі атрибут  НЕ data-action !== 'start'
-    countDown.stop();             //запускаємо метод stop на екземплярі
-    setFormToStartMode();         //змінюємо data-action = 'start,змінюємо напис на кнопці на start/поле вводу доступне 
+    countDown.stop();             //запускаю setFormToStartMod /clearInterval
+    //закоментувала setFormToStartMode();
+   // setFormToStartMode();         //змінюємо на формі data-action = 'start,змінюємо напис на кнопці на start/поле вводу доступне 
   }
 });
 
